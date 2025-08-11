@@ -1,5 +1,7 @@
 package io.hhplus.tdd.point;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,14 +11,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/point")
+@RequiredArgsConstructor
 public class PointController {
 
     private final PointService pointService;
     private static final Logger log = LoggerFactory.getLogger(PointController.class);
-
-    public PointController(PointService pointService) {
-        this.pointService = pointService;
-    }
 
     /**
      * TODO - 특정 유저의 포인트를 조회하는 기능을 작성해주세요.
@@ -38,9 +37,8 @@ public class PointController {
      * TODO - 특정 유저의 포인트를 충전하는 기능을 작성해주세요.
      */
     @PatchMapping("{id}/charge")
-    public UserPoint charge(@PathVariable long id, @RequestBody long amount) {
-        log.info("id = {}, amount = {}", id, amount);
-        return pointService.charge(id, amount);
+    public UserPoint charge(@PathVariable long id, @Valid @RequestBody ChargeRequest request) {
+        return pointService.charge(id, request.getAmount());
     }
 
     /**
