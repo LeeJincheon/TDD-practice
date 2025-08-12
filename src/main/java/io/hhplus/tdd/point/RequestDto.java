@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Min;
 import lombok.Getter;
 
 @Getter
-public class ChargeRequest {
+public class RequestDto {
     @Min(value = 0)
     private long amount;
 }

@@ -23,4 +23,12 @@ public class PointService {
         long newPoint = currentUserPoint.point() + amount;
         return userPointTable.insertOrUpdate(id, newPoint);
     }
+
+    // 포인트 사용
+    public UserPoint use(long id, long amount) {
+        UserPoint currentUserPoint = userPointTable.selectById(id);
+        long newPoint = currentUserPoint.point() - amount;
+        if (newPoint < 0) throw new IllegalArgumentException("포인트가 부족합니다.");
+        return userPointTable.insertOrUpdate(id, newPoint);
+    }
 }

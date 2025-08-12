@@ -17,4 +17,9 @@ class ApiControllerAdvice {
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return ResponseEntity.status(400).body(new ErrorResponse("400", "유효하지 않은 입력입니다."));
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.status(400).body(new ErrorResponse("400", e.getMessage()));
+    }
 }
