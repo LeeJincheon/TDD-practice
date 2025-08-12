@@ -6,9 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class PointServiceTest {
@@ -62,5 +60,35 @@ class PointServiceTest {
 
         // then
         assertThat(result.point()).isEqualTo(expectedPoint);
+    }
+
+    @Test
+    @DisplayName("유저가 존재하는 경우 해당 유저의 포인트 조회")
+    void findPointByUserId_whenUserExists_shouldReturnUserPoint() {
+        // given
+        long userId = 1L;
+        UserPoint expected = new UserPoint(userId, 1000L, System.currentTimeMillis());
+        when(userPointTable.selectById(userId)).thenReturn(expected);
+
+        // when
+        UserPoint result = pointService.findPointByUserId(userId);
+
+        // then
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("유저가 존재하지 않는 경우 empty 포인트를 반환")
+    void findPointByUserId_whenUserNotExist_shouldReturnEmptyUserPoint() {
+        // given
+        long userId = 2L;
+        UserPoint emptyPoint = UserPoint.empty(userId);
+        when(userPointTable.selectById(userId)).thenReturn(emptyPoint);
+
+        // when
+        UserPoint result = pointService.findPointByUserId(userId);
+
+        // then
+        assertThat(result).isEqualTo(emptyPoint);
     }
 }
