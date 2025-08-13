@@ -19,16 +19,22 @@ public class PointService {
 
     // 포인트 충전
     public UserPoint charge(long id, long amount) {
+        pointHistoryTable.insert(id, amount, TransactionType.CHARGE, System.currentTimeMillis());
+
         UserPoint currentUserPoint = userPointTable.selectById(id);
         long newPoint = currentUserPoint.point() + amount;
+
         return userPointTable.insertOrUpdate(id, newPoint);
     }
 
     // 포인트 사용
     public UserPoint use(long id, long amount) {
+        pointHistoryTable.insert(id, amount, TransactionType.USE, System.currentTimeMillis());
+
         UserPoint currentUserPoint = userPointTable.selectById(id);
         long newPoint = currentUserPoint.point() - amount;
         if (newPoint < 0) throw new IllegalArgumentException("포인트가 부족합니다.");
+
         return userPointTable.insertOrUpdate(id, newPoint);
     }
 }
