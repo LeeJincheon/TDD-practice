@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -90,5 +91,59 @@ class PointServiceTest {
 
         // then
         assertThat(result).isEqualTo(emptyPoint);
+    }
+
+    @Test
+    @DisplayName("남은 포인트가 사용할 포인트보다 많은 경우 사용할 포인트만큼 차감")
+    void use_whenPointIsEnough_shouldDeduct() {
+        // given
+        long userId = 1L;
+        long currentPoint = 500L;
+        long amount = 200L;
+        long expectedPoint = currentPoint - amount;
+
+        when(userPointTable.selectById(userId))
+                .thenReturn(new UserPoint(userId, currentPoint, System.currentTimeMillis()));
+        when(userPointTable.insertOrUpdate(userId, expectedPoint))
+                .thenReturn(new UserPoint(userId, expectedPoint, System.currentTimeMillis()));
+
+        // when
+        UserPoint result = pointService.use(userId, amount);
+
+        // then
+        assertThat(result.point()).isEqualTo(expectedPoint);
+    }
+
+    @Test
+    @DisplayName("남은 포인트가 사용할 포인트보다 작은 경우 예외 발생")
+    void use_whenPointIsLessThanAmount_shouldThrowException() {
+        // given
+        long userId = 1L;
+        long currentPoint = 100L;
+        long amount = 200L;
+
+        when(userPointTable.selectById(userId))
+                .thenReturn(new UserPoint(userId, currentPoint, System.currentTimeMillis()));
+
+        // when & then
+        assertThatThrownBy(() -> pointService.use(userId, amount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("포인트가 부족합니다.");
+    }
+
+    @Test
+    @DisplayName("유저가 존재하지 않는 경우 예외 발생")
+    void use_whenUserNotExist_shouldThrowException() {
+        // given
+        long userId = 1L;
+        long amount = 100L;
+
+        when(userPointTable.selectById(userId))
+                .thenReturn(UserPoint.empty(userId));
+
+        // when & then
+        assertThatThrownBy(() -> pointService.use(userId, amount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("포인트가 부족합니다.");
     }
 }
