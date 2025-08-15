@@ -6,8 +6,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class PointServiceTest {
@@ -158,5 +163,40 @@ class PointServiceTest {
                 .hasMessage("포인트가 부족합니다.");
 
         verify(pointHistoryTable, never()).insert(anyLong(), anyLong(), any(), anyLong());
+    }
+
+    @Test
+    @DisplayName("포인트 내역이 없을 경우 빈 리스트를 반환")
+    void findAllHistoriesByUserId_whenHistoriesAreEmpty_shouldEmptyList() {
+        // given
+        long userId = 1L;
+        when(pointHistoryTable.selectAllByUserId(userId))
+                .thenReturn(Collections.emptyList());
+
+        // when
+        List<PointHistory> histories = pointService.findAllHistoriesByUserId(userId);
+
+        // then
+        assertThat(histories).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    @DisplayName("유저의 포인트 내역이 있을 경우 해당 내역들을 반환")
+    void findAllHistoriesByUserId_withHistory() {
+        // given
+        long userId = 1L;
+        PointHistory history1 = new PointHistory(1L, userId, 1000L, TransactionType.CHARGE, System.currentTimeMillis());
+        PointHistory history2 = new PointHistory(2L, userId, -500L, TransactionType.USE, System.currentTimeMillis());
+
+        when(pointHistoryTable.selectAllByUserId(userId))
+                .thenReturn(List.of(history1, history2));
+
+        // when
+        List<PointHistory> histories = pointService.findAllHistoriesByUserId(userId);
+
+        // then
+        assertEquals(2, histories.size());
+        assertTrue(histories.contains(history1));
+        assertTrue(histories.contains(history2));
     }
 }
