@@ -30,6 +30,8 @@ class PointServiceTest {
         long userId = 1L;
         long amount = 500L;
 
+        when(pointHistoryTable.insert(eq(userId), eq(amount), eq(TransactionType.CHARGE), anyLong()))
+                .thenReturn(new PointHistory(1L, userId, amount, TransactionType.CHARGE, System.currentTimeMillis()));
         when(userPointTable.selectById(userId))
                 .thenReturn(UserPoint.empty(userId));
         when(userPointTable.insertOrUpdate(userId, amount))
@@ -40,6 +42,7 @@ class PointServiceTest {
 
         // then
         assertThat(result.point()).isEqualTo(amount);
+        verify(pointHistoryTable).insert(eq(userId), eq(amount), eq(TransactionType.CHARGE), anyLong());
     }
 
     @Test
@@ -51,6 +54,8 @@ class PointServiceTest {
         long amount = 300L;
         long expectedPoint = currentPoint + amount;
 
+        when(pointHistoryTable.insert(eq(userId), eq(amount), eq(TransactionType.CHARGE), anyLong()))
+                .thenReturn(new PointHistory(1L, userId, amount, TransactionType.CHARGE, System.currentTimeMillis()));
         when(userPointTable.selectById(userId))
                 .thenReturn(new UserPoint(userId, currentPoint, System.currentTimeMillis()));
         when(userPointTable.insertOrUpdate(userId, expectedPoint))
@@ -61,6 +66,7 @@ class PointServiceTest {
 
         // then
         assertThat(result.point()).isEqualTo(expectedPoint);
+        verify(pointHistoryTable).insert(eq(userId), eq(amount), eq(TransactionType.CHARGE), anyLong());
     }
 
     @Test
@@ -102,6 +108,8 @@ class PointServiceTest {
         long amount = 200L;
         long expectedPoint = currentPoint - amount;
 
+        when(pointHistoryTable.insert(eq(userId), eq(amount), eq(TransactionType.USE), anyLong()))
+                .thenReturn(new PointHistory(1L, userId, amount, TransactionType.USE, System.currentTimeMillis()));
         when(userPointTable.selectById(userId))
                 .thenReturn(new UserPoint(userId, currentPoint, System.currentTimeMillis()));
         when(userPointTable.insertOrUpdate(userId, expectedPoint))
@@ -112,6 +120,7 @@ class PointServiceTest {
 
         // then
         assertThat(result.point()).isEqualTo(expectedPoint);
+        verify(pointHistoryTable).insert(eq(userId), eq(amount), eq(TransactionType.USE), anyLong());
     }
 
     @Test
@@ -129,6 +138,8 @@ class PointServiceTest {
         assertThatThrownBy(() -> pointService.use(userId, amount))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("포인트가 부족합니다.");
+
+        verify(pointHistoryTable, never()).insert(anyLong(), anyLong(), any(), anyLong());
     }
 
     @Test
@@ -145,5 +156,7 @@ class PointServiceTest {
         assertThatThrownBy(() -> pointService.use(userId, amount))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("포인트가 부족합니다.");
+
+        verify(pointHistoryTable, never()).insert(anyLong(), anyLong(), any(), anyLong());
     }
 }
